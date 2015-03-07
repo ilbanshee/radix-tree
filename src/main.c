@@ -4,48 +4,31 @@
 #include "radix_tree.h"
 
 int main() {
-  node_t* root = node_init("aba");
-  node_t* abab = node_init("b");
-  node_t* b = node_init("b");
-  node_t* bc = node_init("c");
-  node_t* bac = node_init("ac");
-  node_t* baca = node_init("a");
-
-  root->link = abab;
-  root->next = b;
-  b->link = bc;
-  bc->next = bac;
-  bac->link = baca;
-
-  node_t* tmp = node_insert(root, "bacobak", 0);
+  node_t* root = node_init("com.google");
+  node_insert(root, "com.amazon", 0);
+  node_insert(root, "it.amazon", 0);
+  node_insert(root, "it.google", 0);
+  node_insert(root, "com.amazing-spiderman", 0);
+  node_insert(root, "com.ebay.deals", 0);
+  node_insert(root, "com.ebay.signin", 0);
+  node_insert(root, "com.oracle.java", 0);
+  node_insert(root, "com.oracle.db", 0);
 
   tree_dump(root);
 
-  node_t* p = node_find(root, "bacobak", 0);
+  node_t* p = node_find(root, "com.amazing-spiderman", 0);
   if (p != NULL) {
     printf("the node is: %s\n", p->key);
   } else {
     printf("NULL...\n");
   }
 
-  node_remove(root, "baca", 0);
-
-  p = node_find(root, "bacobak", 0);
+  p = node_find(root, "com.oracle.java", 0);
   if (p != NULL) {
     printf("the node is: %s\n", p->key);
   } else {
     printf("NULL...\n");
   }
-
-  // tree_free(root);
-
-  node_free(root);
-  node_free(abab);
-  node_free(b);
-  node_free(bc);
-  node_free(bac);
-  // node_free(baca);
-  // node_free(tmp);
 
   return 0;
 }

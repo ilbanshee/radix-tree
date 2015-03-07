@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "radix_tree.h"
 
 int node_prefix(const char* x, int n, const char* key, int m);
@@ -109,23 +110,26 @@ node_t* node_remove(node_t* t, char* x, int n) {
   return t;
 }
 
-void tree_dump_with_level(node_t* root, int level) {
-  for (int i = 0; i < level; i++) {
-    printf("-");
-  }
-  printf("> %s\n", root->key);
-
-  node_t* tmp = root->next;
-  while (tmp) {
-    tree_dump_with_level(tmp, level + 1);
-    tmp = tmp->next;
+void tree_dump_full(node_t* root, char* prefix) {
+  if (root->link == NULL) {
+    printf("%s|%s\n", prefix, root->key);
   }
 
-  tmp = root->link;
-  while (tmp) {
-    tree_dump_with_level(tmp, level);
+  node_t* tmp = root->link;
+  while (tmp != NULL) {
+  	char* p = calloc(strlen(prefix)+strlen(root->key), sizeof(char));
+  	sprintf(p, "%s|%s", prefix, root->key);
+    tree_dump_full(tmp, p);
+
     tmp = tmp->link;
+  }
+
+  tmp = root->next;
+  while (tmp != NULL) {
+    tree_dump_full(tmp, prefix);
+
+    tmp = tmp->next;
   }
 }
 
-void tree_dump(node_t* root) { tree_dump_with_level(root, 0); }
+void tree_dump(node_t* root) { tree_dump_full(root, ""); }
