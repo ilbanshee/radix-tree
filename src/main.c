@@ -32,7 +32,7 @@ void t_with_insert() {
 }
 
 void t_by_hand() {
-  node_t* root1 = node_init("com.");
+  node_t* root = node_init("com.");
   node_t* com_amazon = node_init("amazon");
   node_t* com_ebay = node_init("ebay.");
   node_t* com_oracle = node_init("oracle.");
@@ -47,26 +47,26 @@ void t_by_hand() {
   node_t* it_amazon = node_init("amazon");
   node_t* it_alice = node_init("alice");
 
-  root1->link = com_ebay;
+  root->link = com_ebay;
   com_ebay->link = com_ebay_deals;
   com_ebay_deals->next = com_ebay_signin;
 
-  assert(4 == tree_count(root1));
+  assert(4 == tree_count(root));
 
   com_ebay->next = com_oracle;
   com_oracle->link = com_oracle_java;
   com_oracle->next = com_amazon;
   com_oracle_java->next = com_oracle_db;
 
-  root1->next = it;
+  root->next = it;
   it->link = it_oracle;
   it_oracle->next = it_google;
   it_oracle->link = it_oracle_db;
   it_google->next = it_amazon;
   it_amazon->next = it_alice;
 
-  assert(9 == tree_count_entries(root1));
-  tree_free(root1);
+  assert(9 == tree_count_entries(root));
+  tree_free(root);
 }
 
 void t_long_list() {
