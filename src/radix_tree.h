@@ -15,5 +15,8 @@ node_t* node_remove(node_t* t, char* x, int n);
 node_t* node_init(const char* key);
 void node_free(node_t* node);
 void tree_dump(node_t* root);
+int tree_count(node_t* root);
+void tree_free(node_t* root);
+int tree_count_entries(node_t* root);
 
-#endif // RADIX_TREE_H_
+#endif  // RADIX_TREE_H_

@@ -4,16 +4,16 @@
 #include <stdbool.h>
 #include "radix_tree.h"
 
-int node_prefix(const char* x, int n, const char* key, int m);
-void node_split(node_t* t, int k);
-void node_join(node_t* t);
-void tree_dump_with_level(node_t* root, int level);
-void tree_dump(node_t* root);
-node_t* node_insert(node_t* t, char* x, int n);
+int node_prefix(const char *x, int n, const char *key, int m);
+void node_split(node_t *t, int k);
+void node_join(node_t *t);
+void tree_dump_with_level(node_t *root, int level);
+void tree_dump(node_t *root);
+node_t *node_insert(node_t *t, char *x, int n);
 
-node_t* node_init(const char* key) {
+node_t *node_init(const char *key) {
   int len = strlen(key);
-  node_t* res = calloc(1, sizeof(node_t));
+  node_t *res = calloc(1, sizeof(node_t));
   res->key = calloc(len + 1, sizeof(char));
   strncpy(res->key, key, len);
   res->len = len;
@@ -23,24 +23,22 @@ node_t* node_init(const char* key) {
   return res;
 }
 
-void node_free(node_t* node) {
+void node_free(node_t *node) {
   free(node->key);
   free(node);
 }
 
 // length of the biggest common prefix of x and key strings
-int node_prefix(const char* x, int n, const char* key, int m) {
+int node_prefix(const char *x, int n, const char *key, int m) {
   for (int k = 0; k <= n; k++)
     if (k == m || x[k] != key[k]) return k;
   return n;
 }
 
-node_t* node_find(node_t* t, char* x, int n) {
-  // printf("node: %s, x: %s, n: %d\n", t->key, x, n);
+node_t *node_find(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
-  // printf("k: %d n: %d\n", k, n);
   // check child node
   if (k == 0) {
     return node_find(t->next, x, n);
@@ -53,7 +51,7 @@ node_t* node_find(node_t* t, char* x, int n) {
   return NULL;
 }
 
-node_t* node_insert(node_t* t, char* x, int n) {
+node_t *node_insert(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return node_init(x);
   int k = node_prefix(x, n, t->key, t->len);
@@ -67,11 +65,11 @@ node_t* node_insert(node_t* t, char* x, int n) {
   return t;
 }
 
-void node_split(node_t* t, int k) {
-  node_t* p = node_init(t->key + k);
+void node_split(node_t *t, int k) {
+  node_t *p = node_init(t->key + k);
   p->link = t->link;
   t->link = p;
-  char* a = calloc(k + 1, sizeof(char));
+  char *a = calloc(k + 1, sizeof(char));
   strncpy(a, t->key, k);
   free(t->key);
   t->key = a;
@@ -79,9 +77,9 @@ void node_split(node_t* t, int k) {
 }
 
 // merge t and t->link nodes
-void node_join(node_t* t) {
-  node_t* p = t->link;
-  char* a = calloc(t->len + p->len + 1, sizeof(char));
+void node_join(node_t *t) {
+  node_t *p = t->link;
+  char *a = calloc(t->len + p->len + 1, sizeof(char));
   strncpy(a, t->key, t->len);
   strncpy(a + t->len, p->key, p->len);
   free(t->key);
@@ -91,13 +89,13 @@ void node_join(node_t* t) {
   node_free(p);
 }
 
-node_t* node_remove(node_t* t, char* x, int n) {
+node_t *node_remove(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
   // deleting a leaf
   if (k == n) {
-    node_t* p = t->next;
+    node_t *p = t->next;
     node_free(t);
     return p;
   }
@@ -110,26 +108,66 @@ node_t* node_remove(node_t* t, char* x, int n) {
   return t;
 }
 
-void tree_dump_full(node_t* root, char* prefix) {
+int tree_count(node_t *root) {
+  int c = 1;
+  node_t *tmp = root->link;
+  if (tmp != NULL) {
+    c += tree_count(tmp);
+  }
+  tmp = root->next;
+  if (tmp != NULL) {
+    c += tree_count(tmp);
+  }
+  return c;
+}
+
+int tree_count_entries(node_t *root) {
+  int c = 0;
   if (root->link == NULL) {
-    printf("%s|%s\n", prefix, root->key);
+    c = 1;
+  }
+  node_t *tmp = root->link;
+  if (tmp != NULL) {
+    c += tree_count_entries(tmp);
+  }
+  tmp = root->next;
+  if (tmp != NULL) {
+    c += tree_count_entries(tmp);
+  }
+  return c;
+}
+
+void tree_dump_full(node_t *root, char *prefix) {
+  if (root->link == NULL) {
+    printf("%s%s\n", prefix, root->key);
   }
 
-  node_t* tmp = root->link;
-  while (tmp != NULL) {
-  	char* p = calloc(strlen(prefix)+strlen(root->key), sizeof(char));
-  	sprintf(p, "%s|%s", prefix, root->key);
+  node_t *tmp = root->link;
+  if (tmp != NULL) {
+    char *p = calloc(strlen(prefix) + strlen(root->key) + 1, sizeof(char));
+    sprintf(p, "%s%s", prefix, root->key);
     tree_dump_full(tmp, p);
-
-    tmp = tmp->link;
+    free(p);
   }
 
   tmp = root->next;
-  while (tmp != NULL) {
+  if (tmp != NULL) {
     tree_dump_full(tmp, prefix);
-
-    tmp = tmp->next;
   }
 }
 
-void tree_dump(node_t* root) { tree_dump_full(root, ""); }
+void tree_dump(node_t *root) { tree_dump_full(root, ""); }
+
+void tree_free(node_t *root) {
+  node_t *tmp = root->link;
+  if (tmp != NULL) {
+    tree_free(tmp);
+  }
+  tmp = root->next;
+  if (tmp != NULL) {
+    tree_free(tmp);
+  }
+
+  free(root->key);
+  free(root);
+}
