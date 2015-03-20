@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "radix_tree.h"
 
 #define NAMES "test-data/name-list.txt"
 #define DNS "test-data/random-domains.txt"
+#define CENSUS "test-data/census.txt"
 
 void t_with_insert() {
   node_t* root = node_init("com.google");
@@ -69,43 +71,114 @@ void t_by_hand() {
   tree_free(root);
 }
 
-void t_long_list() {
-  node_t* names = node_init("");
+void t_name_list() {
+  node_t* names;
+  bool first = true;
+  FILE* file = fopen(NAMES, "r");
+  if (file != NULL) {
+    char line[128];
+    while (fgets(line, sizeof line, file) != NULL) {
+      if (first) {
+	names = node_init(line);
+	first = false;
+      } else {
+	node_insert(names, line, 0);
+      }
+    }
+    fclose(file);
+  } else {
+    perror(NAMES);
+  }
+  assert(200 == tree_count_entries(names));
+  tree_free(names);
+}
+
+void t_partial_domain_list() {
+  node_t* names;
+  bool first = true;
   FILE* file = fopen(DNS, "r");
   if (file != NULL) {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
-      node_insert(names, line, 0);
+      if (first) {
+	names = node_init(line);
+	first = false;
+      } else {
+	node_insert(names, line, 0);
+      }
     }
     fclose(file);
   } else {
-    perror(NAMES);
+    perror(DNS);
   }
-  assert(9794 + 1 == tree_count_entries(names));
+  assert(9794 == tree_count_entries(names));
   tree_free(names);
+}
 
-  names = node_init("");
-  file = fopen(NAMES, "r");
+void t_census_list() {
+  node_t* names;
+  bool first = true;
+  FILE* file = fopen(CENSUS, "r");
   if (file != NULL) {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
-      node_insert(names, line, 0);
+      if (first) {
+	names = node_init(line);
+	first = false;
+      } else {
+	node_insert(names, line, 0);
+      }
+    }
+    fclose(file);
+  } else {
+    perror(CENSUS);
+  }
+  assert(88799 == tree_count_entries(names));
+  tree_free(names);
+}
+
+void t_remove() {
+  node_t* names;
+  bool first = true;
+  FILE* file = fopen(NAMES, "r");
+  if (file != NULL) {
+    char line[128];
+    while (fgets(line, sizeof line, file) != NULL) {
+      char *pos;
+      if ((pos=strchr(line, '\n')) != NULL)
+	*pos = '\0';
+
+      if (first) {
+	names = node_init(line);
+	first = false;
+      } else {
+	node_insert(names, line, 0);
+      }
     }
     fclose(file);
   } else {
     perror(NAMES);
   }
-  assert(200 + 1 == tree_count_entries(names));
+  assert(200 == tree_count_entries(names));
+
+  node_t* tmp = node_find(names, "Leonore Krach", 0);
+  assert(tmp != NULL);
+  assert(strcmp(tmp->key, "ore Krach") == 0);
+  names = node_remove(names, "Leonore Krach", 0);
+  assert(199 == tree_count_entries(names));
+    
   tree_free(names);
 }
 
 int main() {
   t_with_insert();
   t_by_hand();
-  t_long_list();
+  t_name_list();
+  t_census_list();
+  t_partial_domain_list();
 
-  // TODO write some tests for find and delete...
-
+  t_remove();
+  
   /*
   node_t* p = node_find(root, "com.amazing-spiderman", 0);
   if (p != NULL) {
