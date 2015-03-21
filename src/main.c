@@ -3,11 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#if defined(__APPLE__) && defined(__MACH__)
 #include <sys/time.h>
-#else
-#include <time.h>
-#endif
 #include "radix_tree.h"
 
 #define NAMES "test-data/name-list.txt"
