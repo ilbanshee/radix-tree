@@ -197,6 +197,26 @@ void t_remove() {
   printf("[OK]\n");
 }
 
+void t_remove_root() {
+  printf("Testing root removal                                ");
+  node_t* root = node_init("com.google");
+  node_insert(root, "com.amazon");
+  node_insert(root, "it.amazon");
+
+  root = node_remove(root, "com.");
+  assert(root != NULL);
+  assert(1 == tree_count(root));
+  assert(1 == tree_count_entries(root));
+
+  root = node_remove(root, "it.ama");
+  assert(root == NULL);
+
+  root = node_remove(root, "test");
+  assert(root == NULL);
+
+  printf("[OK]\n");
+}
+
 void t_find() {
   printf("Testing find and partial find operations            ");
   node_t* names;
@@ -247,6 +267,7 @@ int main() {
   t_partial_domain_list();
   /* test elements removal */
   t_remove();
+  t_remove_root();
   /* test find functions */
   t_find();
 
