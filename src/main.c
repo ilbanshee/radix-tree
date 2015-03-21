@@ -6,17 +6,31 @@
 #include <sys/time.h>
 #include "radix_tree.h"
 
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_GREEN "\x1b[32m"
+#define ANSI_COLOR_RESET "\x1b[0m"
 
 #define NAMES "test-data/name-list.txt"
 #define DNS "test-data/random-domains.txt"
 #define CENSUS "test-data/census.txt"
 
-
-int tv_diff(struct timeval t1, struct timeval t2) {
+static int tv_diff(struct timeval t1, struct timeval t2) {
   return (((t1.tv_sec - t2.tv_sec) * 1000000) + (t1.tv_usec - t2.tv_usec)) /
          1000;
+}
+
+static char* rand_string(char* str, size_t size) {
+  struct timeval tv_begin, tv_end;
+  gettimeofday(&tv_begin, NULL);
+  const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789%$£/.,;";
+  if (size) {
+    --size;
+    for (size_t n = 0; n < size; n++) {
+      int key = rand() % (int)(sizeof charset - 1);
+      str[n] = charset[key];
+    }
+    str[size] = '\0';
+  }
+  return str;
 }
 
 void t_with_insert() {
@@ -160,8 +174,10 @@ void t_census_list() {
   gettimeofday(&tv_end, NULL);
   int count = tv_diff(tv_end, tv_begin);
   tree_free(names);
-  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n\tData loaded in %dms and counted in %dms      [--]\n", load,
-         count);
+  printf(ANSI_COLOR_GREEN
+         "[OK]" ANSI_COLOR_RESET
+         "\n\tData loaded in %dms and counted in %dms\n",
+         load, count);
 }
 
 void t_remove() {
@@ -263,7 +279,39 @@ void t_find() {
   printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
+void t_random_insert() {
+  printf("Testing one million random node_insert()            ");
+  char* to_insert = malloc(20*sizeof(char));
+  to_insert = rand_string(to_insert, 20);
+  struct timeval tv_begin, tv_end;
+  gettimeofday(&tv_begin, NULL);
+  node_t* root = node_init(to_insert);
+  for (int i=0; i<1000*1000; i++) {
+    to_insert = rand_string(to_insert, 20);
+    node_insert(root, to_insert);
+  }
+  gettimeofday(&tv_end, NULL);
+  free(to_insert);
+
+  char to_remove[2];
+  to_remove[1] = '\0';
+  int last_size = 0;
+  const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789%$£/.,;";
+  int i=0;
+  while(root != NULL) {
+    to_remove[0] = charset[i];
+    root = node_remove(root, to_remove);
+    i++;
+  }
+  
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
+  printf("\t Elapsed time for insert is %dms\n", tv_diff(tv_end, tv_begin)); 
+}
+
 int main() {
+  // init random generator
+  srand(time(NULL));
+  
   /* test tree creation */
   t_with_insert();
   t_by_hand();
@@ -275,6 +323,8 @@ int main() {
   t_remove_root();
   /* test find functions */
   t_find();
+
+  t_random_insert();
 
   return 0;
 }
