@@ -79,10 +79,10 @@ void t_name_list() {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
       if (first) {
-	names = node_init(line);
-	first = false;
+        names = node_init(line);
+        first = false;
       } else {
-	node_insert(names, line, 0);
+        node_insert(names, line, 0);
       }
     }
     fclose(file);
@@ -101,10 +101,10 @@ void t_partial_domain_list() {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
       if (first) {
-	names = node_init(line);
-	first = false;
+        names = node_init(line);
+        first = false;
       } else {
-	node_insert(names, line, 0);
+        node_insert(names, line, 0);
       }
     }
     fclose(file);
@@ -123,10 +123,10 @@ void t_census_list() {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
       if (first) {
-	names = node_init(line);
-	first = false;
+        names = node_init(line);
+        first = false;
       } else {
-	node_insert(names, line, 0);
+        node_insert(names, line, 0);
       }
     }
     fclose(file);
@@ -144,15 +144,14 @@ void t_remove() {
   if (file != NULL) {
     char line[128];
     while (fgets(line, sizeof line, file) != NULL) {
-      char *pos;
-      if ((pos=strchr(line, '\n')) != NULL)
-	*pos = '\0';
+      char* pos;
+      if ((pos = strchr(line, '\n')) != NULL) *pos = '\0';
 
       if (first) {
-	names = node_init(line);
-	first = false;
+        names = node_init(line);
+        first = false;
       } else {
-	node_insert(names, line, 0);
+        node_insert(names, line, 0);
       }
     }
     fclose(file);
@@ -166,7 +165,7 @@ void t_remove() {
   assert(strcmp(tmp->key, "ore Krach") == 0);
   names = node_remove(names, "Leonore Krach", 0);
   assert(199 == tree_count_entries(names));
-    
+
   tree_free(names);
 }
 
@@ -178,7 +177,7 @@ int main() {
   t_partial_domain_list();
 
   t_remove();
-  
+
   /*
   node_t* p = node_find(root, "com.amazing-spiderman", 0);
   if (p != NULL) {
