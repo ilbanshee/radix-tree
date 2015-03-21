@@ -220,6 +220,8 @@ void t_find() {
   tmp = node_find(names, "Leonore Krach");
   assert(tmp != NULL);
   assert(strcmp(tmp->key, "ore Krach") == 0);
+
+  tree_free(names);
   printf("[OK]\n");
 }
 
