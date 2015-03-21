@@ -6,9 +6,13 @@
 #include <sys/time.h>
 #include "radix_tree.h"
 
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 #define NAMES "test-data/name-list.txt"
 #define DNS "test-data/random-domains.txt"
 #define CENSUS "test-data/census.txt"
+
 
 int tv_diff(struct timeval t1, struct timeval t2) {
   return (((t1.tv_sec - t2.tv_sec) * 1000000) + (t1.tv_usec - t2.tv_usec)) /
@@ -37,7 +41,7 @@ void t_with_insert() {
   assert(9 == tree_count_entries(root));
 
   tree_free(root);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_by_hand() {
@@ -77,7 +81,7 @@ void t_by_hand() {
 
   assert(9 == tree_count_entries(root));
   tree_free(root);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_name_list() {
@@ -101,7 +105,7 @@ void t_name_list() {
   }
   assert(200 == tree_count_entries(names));
   tree_free(names);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_partial_domain_list() {
@@ -125,7 +129,7 @@ void t_partial_domain_list() {
   }
   assert(9794 == tree_count_entries(names));
   tree_free(names);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_census_list() {
@@ -156,7 +160,8 @@ void t_census_list() {
   gettimeofday(&tv_end, NULL);
   int count = tv_diff(tv_end, tv_begin);
   tree_free(names);
-  printf("[OK]\n\tData loaded in %dms and counted in %dms\n", load, count);
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n\tData loaded in %dms and counted in %dms      [--]\n", load,
+         count);
 }
 
 void t_remove() {
@@ -194,7 +199,7 @@ void t_remove() {
   assert(198 == tree_count_entries(names));
 
   tree_free(names);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_remove_root() {
@@ -214,7 +219,7 @@ void t_remove_root() {
   root = node_remove(root, "test");
   assert(root == NULL);
 
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 void t_find() {
@@ -255,7 +260,7 @@ void t_find() {
   assert(strcmp(tmp->key, "ore Krach") == 0);
 
   tree_free(names);
-  printf("[OK]\n");
+  printf(ANSI_COLOR_GREEN "[OK]" ANSI_COLOR_RESET "\n");
 }
 
 int main() {
