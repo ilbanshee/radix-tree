@@ -9,7 +9,9 @@ void node_split(node_t *t, int k);
 void node_join(node_t *t);
 void tree_dump_with_level(node_t *root, int level);
 void tree_dump(node_t *root);
-node_t *node_insert(node_t *t, char *x, int n);
+node_t *node_insert_full(node_t *t, char *x, int n);
+node_t *node_find_full(node_t *t, char *x, int n);
+node_t *node_remove_full(node_t *t, char *x, int n);
 
 node_t *node_init(const char *key) {
   int len = strlen(key);
@@ -28,39 +30,59 @@ void node_free(node_t *node) {
   free(node);
 }
 
-// length of the biggest common prefix of x and key strings
+/* length of the biggest common prefix of x and key strings */
 int node_prefix(const char *x, int n, const char *key, int m) {
   for (int k = 0; k <= n; k++)
     if (k == m || x[k] != key[k]) return k;
   return n;
 }
 
-node_t *node_find(node_t *t, char *x, int n) {
+/* find node with given char* key, even a partial match is ok */
+node_t *node_find(node_t *t, char *x) { return node_find_full(t, x, 0); }
+
+/* find node with given char* key, an exact match is required */
+node_t *node_find_exact(node_t *t, char *x) {
+  node_t *res = node_find_full(t, x, 0);
+  if (res == NULL) {
+    return NULL;
+  }
+  size_t n = strlen(res->key);
+  /* compare the last n chars of given char* to the result key that we found */
+  if (strcmp(x + n, res->key) != 0) {
+    return NULL;
+  }
+
+  return res;
+}
+
+node_t *node_find_full(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
   // check child node
   if (k == 0) {
-    return node_find(t->next, x, n);
+    return node_find_full(t->next, x, n);
   }
   if (k == n) return t;
   // check siblings node
   if (k == t->len) {
-    return node_find(t->link, x + k, n - k);
+    return node_find_full(t->link, x + k, n - k);
   }
   return NULL;
 }
 
-node_t *node_insert(node_t *t, char *x, int n) {
+node_t *node_insert(node_t *t, char *x) { return node_insert_full(t, x, 0); }
+
+node_t *node_insert_full(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return node_init(x);
   int k = node_prefix(x, n, t->key, t->len);
   if (k == 0)
-    t->next = node_insert(t->next, x, n);
+    t->next = node_insert_full(t->next, x, n);
   else if (k < n) {
     // cut or not?
     if (k < t->len) node_split(t, k);
-    t->link = node_insert(t->link, x + k, n - k);
+    t->link = node_insert_full(t->link, x + k, n - k);
   }
   return t;
 }
@@ -89,7 +111,9 @@ void node_join(node_t *t) {
   node_free(p);
 }
 
-node_t *node_remove(node_t *t, char *x, int n) {
+node_t *node_remove(node_t *t, char *x) { return node_remove_full(t, x, 0); }
+
+node_t *node_remove_full(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
@@ -100,9 +124,9 @@ node_t *node_remove(node_t *t, char *x, int n) {
     return p;
   }
   if (k == 0) {
-    t->next = node_remove(t->next, x, n);
+    t->next = node_remove_full(t->next, x, n);
   } else if (k == t->len) {
-    t->link = node_remove(t->link, x + k, n - k);
+    t->link = node_remove_full(t->link, x + k, n - k);
     if (t->link && !t->link->next) node_join(t);
   }
   return t;
