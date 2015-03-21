@@ -59,12 +59,12 @@ node_t *node_find_full(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
-  // check child node
+  /* check child node */
   if (k == 0) {
     return node_find_full(t->next, x, n);
   }
   if (k == n) return t;
-  // check siblings node
+  /* check siblings node */
   if (k == t->len) {
     return node_find_full(t->link, x + k, n - k);
   }
@@ -80,7 +80,7 @@ node_t *node_insert_full(node_t *t, char *x, int n) {
   if (k == 0)
     t->next = node_insert_full(t->next, x, n);
   else if (k < n) {
-    // cut or not?
+    /* cut or not? */
     if (k < t->len) node_split(t, k);
     t->link = node_insert_full(t->link, x + k, n - k);
   }
@@ -98,7 +98,7 @@ void node_split(node_t *t, int k) {
   t->len = k;
 }
 
-// merge t and t->link nodes
+/* merge t and t->link nodes */
 void node_join(node_t *t) {
   node_t *p = t->link;
   char *a = calloc(t->len + p->len + 1, sizeof(char));
@@ -117,9 +117,11 @@ node_t *node_remove_full(node_t *t, char *x, int n) {
   if (!n) n = strlen(x);
   if (!t) return 0;
   int k = node_prefix(x, n, t->key, t->len);
-  // deleting a leaf
+  /* deleting a leaf */
   if (k == n) {
     node_t *p = t->next;
+    /* delete every linked node under this one */
+    if (t->link) tree_free(t->link);
     node_free(t);
     return p;
   }
@@ -163,13 +165,13 @@ int tree_count_entries(node_t *root) {
 
 void tree_dump_full(node_t *root, char *prefix) {
   if (root->link == NULL) {
-    printf("%s%s\n", prefix, root->key);
+    printf("%s|%s\n", prefix, root->key);
   }
 
   node_t *tmp = root->link;
   if (tmp != NULL) {
     char *p = calloc(strlen(prefix) + strlen(root->key) + 1, sizeof(char));
-    sprintf(p, "%s%s", prefix, root->key);
+    sprintf(p, "%s|%s", prefix, root->key);
     tree_dump_full(tmp, p);
     free(p);
   }
