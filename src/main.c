@@ -3,11 +3,21 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#if defined(__APPLE__) && defined(__MACH__)
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
 #include "radix_tree.h"
 
 #define NAMES "test-data/name-list.txt"
 #define DNS "test-data/random-domains.txt"
 #define CENSUS "test-data/census.txt"
+
+int tv_diff(struct timeval t1, struct timeval t2) {
+  return (((t1.tv_sec - t2.tv_sec) * 1000000) + (t1.tv_usec - t2.tv_usec)) /
+         1000;
+}
 
 void t_with_insert() {
   printf("Testing manual node insert ops                      ");
@@ -124,6 +134,8 @@ void t_partial_domain_list() {
 
 void t_census_list() {
   printf("Loading 90k name list                               ");
+  struct timeval tv_begin, tv_end;
+  gettimeofday(&tv_begin, NULL);
   node_t* names;
   bool first = true;
   FILE* file = fopen(CENSUS, "r");
@@ -141,9 +153,14 @@ void t_census_list() {
   } else {
     perror(CENSUS);
   }
+  gettimeofday(&tv_end, NULL);
+  int load = tv_diff(tv_end, tv_begin);
+  gettimeofday(&tv_begin, NULL);
   assert(88799 == tree_count_entries(names));
+  gettimeofday(&tv_end, NULL);
+  int count = tv_diff(tv_end, tv_begin);
   tree_free(names);
-  printf("[OK]\n");
+  printf("[OK]\n\tData loaded in %dms and counted in %dms\n", load, count);
 }
 
 void t_remove() {
